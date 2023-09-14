@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('external_code')->nullable();
             $table->string('internal_code')->unique();
 
-            $table->string('slug');
+            $table->string('slug')->nullable();
             $table->string('name');
             $table->text('description')->nullable();
 

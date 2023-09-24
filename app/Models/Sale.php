@@ -32,6 +32,7 @@ class Sale extends Model
         'received_money',
         'change',
 
+        'type_of_payment_id',
         'serie_id',
         'customer_id',
         'user_id'

@@ -24,6 +24,7 @@ class SaleController extends Controller
     {
         $serie_id = $request->serie_id ?? 1;
         $customer_id = $request->customer_id ?? 1;
+        $type_of_payment_id = $request->type_of_payment_id ?? 1;
         $user_id = 1;
         $details = collect($request->details);
 
@@ -64,6 +65,7 @@ class SaleController extends Controller
             // 'received_money',
             // 'change',
 
+            'type_of_payment_id' => (int)$type_of_payment_id,
             'serie_id' => $serie_id,
             'customer_id' => $customer_id,
             'user_id' => $user_id

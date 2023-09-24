@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,4 +26,7 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 Route::apiResource('products', ProductController::class)->names('api.products');
 
 Route::apiResource('sales', SaleController::class)->names('api.sales');
+
+Route::get('dashboard', [DashboardController::class, 'index'])->name('api.dashboard');
+
 

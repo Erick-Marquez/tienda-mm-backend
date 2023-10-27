@@ -32,6 +32,14 @@ class Sale extends Model
         'received_money',
         'change',
 
+        'sunat_state',
+        'sunat_code',
+        'sunat_notes',
+
+        'sunat_path_xml',
+        'sunat_path_cdr',
+        'sunat_filename',
+
         'type_of_payment_id',
         'serie_id',
         'customer_id',

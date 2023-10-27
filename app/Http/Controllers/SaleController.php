@@ -12,9 +12,34 @@ class SaleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $rows = $request['rows'] ?? 5;
+        $page = $request['page'] + 1 ?? 1;
+        $search = $request['filters']['global']['value'] ?? null;
+
+        $query = Sale::with('serie')->whereHas('serie', function ($q) {
+            return $q->where('voucher_type_id', 1);
+        });
+
+        if (isset($search)) {
+            $matches = [];
+            $regex = '/([N][0-9][0-9][0-9])-([0-9])+/';
+            if (preg_match($regex, $search, $matches)) {
+                [$serie, $number] = explode('-', $search);
+                $query->whereHas('serie', function ($q) use ($serie) {
+                    return $q->where('serie', $serie);
+                });
+                $query->where('document_number', $number);
+            }   
+        }
+
+
+        $query->orderBy('document_number', 'DESC');
+
+        $sales = $query->paginate($rows, ['*'], 'page', $page);
+
+        return $sales;
     }
 
     /**
@@ -121,5 +146,10 @@ class SaleController extends Controller
     public function destroy(Sale $sale)
     {
         //
+    }
+
+    public function convertInvoice(Request $request)
+    {
+        return $request;
     }
 }

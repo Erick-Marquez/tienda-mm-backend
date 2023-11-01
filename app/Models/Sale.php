@@ -52,6 +52,16 @@ class Sale extends Model
         return $this->hasMany(SaleDetail::class);
     }
 
+    // public function invoice()
+    // {
+    //     return $this->hasOne(Sale::class, 'invoice_id');
+    // }
+
+    // public function saleNote()
+    // {
+    //     return $this->hasOne(Sale::class);
+    // }
+
     public function serie()
     {
         return $this->belongsTo(Serie::class);

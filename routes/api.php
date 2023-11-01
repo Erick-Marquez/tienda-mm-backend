@@ -29,6 +29,7 @@ Route::apiResource('products', ProductController::class)->names('api.products');
 Route::apiResource('sales', SaleController::class)->names('api.sales');
 
 Route::post('sales/convert-invoice', [SaleController::class, 'convertInvoice'])->name('api.sales.convert-invoice');
+Route::post('sales/batch-convert-invoice', [SaleController::class, 'batchConvertInvoice'])->name('api.sales.batch-convert-invoice');
 
 
 Route::get('dashboard', [DashboardController::class, 'index'])->name('api.dashboard');

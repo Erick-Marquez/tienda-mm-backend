@@ -32,6 +32,14 @@ class Sale extends Model
         'received_money',
         'change',
 
+        'sunat_state',
+        'sunat_code',
+        'sunat_notes',
+
+        'sunat_path_xml',
+        'sunat_path_cdr',
+        'sunat_filename',
+
         'type_of_payment_id',
         'serie_id',
         'customer_id',
@@ -43,6 +51,16 @@ class Sale extends Model
     {
         return $this->hasMany(SaleDetail::class);
     }
+
+    // public function invoice()
+    // {
+    //     return $this->hasOne(Sale::class, 'invoice_id');
+    // }
+
+    // public function saleNote()
+    // {
+    //     return $this->hasOne(Sale::class);
+    // }
 
     public function serie()
     {

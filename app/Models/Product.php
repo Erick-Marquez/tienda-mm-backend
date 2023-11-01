@@ -23,6 +23,7 @@ class Product extends Model
         'stock',
 
         'is_weighable',
+        'is_invoiceable',
         'is_active'
     ];
 

@@ -20,6 +20,7 @@ class Summary extends Model
 
         'sunat_state',
         'sunat_code',
+        'sunat_response',
         'sunat_notes',
 
         'sunat_path_xml',
@@ -32,7 +33,7 @@ class Summary extends Model
 
     public function sales()
     {
-        return $this->belongsToMany(Sales::class, 'summary_details', 'summary_id', 'sale_id');
+        return $this->belongsToMany(Sale::class, 'summary_details', 'summary_id', 'sale_id');
     }
 
 }

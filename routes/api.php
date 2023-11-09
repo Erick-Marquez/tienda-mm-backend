@@ -41,6 +41,8 @@ Route::prefix('sunat')->group(function () {
         Route::get('index', [SummaryController::class, 'index'])->name('api.sunat.summary.index');
         Route::post('store', [SummaryController::class, 'store'])->name('api.sunat.summary.store');
         Route::post('get-documents', [SummaryController::class, 'getDocuments'])->name('api.sunat.summary.get-documents');
+        Route::post('send', [SummaryController::class, 'send'])->name('api.sunat.summary.send');
+        Route::post('ticket', [SummaryController::class, 'ticket'])->name('api.sunat.summary.ticket');
     });
 
 });

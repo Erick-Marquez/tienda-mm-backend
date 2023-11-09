@@ -34,6 +34,7 @@ class Sale extends Model
 
         'sunat_state',
         'sunat_code',
+        'sunat_response',
         'sunat_notes',
 
         'sunat_path_xml',

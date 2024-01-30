@@ -7,6 +7,7 @@ use App\Models\SaleDetail;
 use App\Models\Serie;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use DB;
 
 class SaleController extends Controller
 {
@@ -85,7 +86,7 @@ class SaleController extends Controller
             'total_exonerated' => 0,
             'total_unaffected' => 0,
             'total_free' => 0,
-            'total_taxed' => $total_igv,
+            'total_taxed' => $subtotal,
             'total' => $total,
 
             // 'received_money',
@@ -161,87 +162,199 @@ class SaleController extends Controller
         $serie_id = 2; // BOLETA
         $user_id = 1; // USER ADMIN
 
-        $sales = Sale::with('saleDetails.product')
-            ->where('serie_id', 1)
-            ->whereNull('invoice_id')
-            ->whereBetween('date_issue', [$since, $until])
-            ->orderBy('id', 'asc')
-            ->get();
+        $details = DB::table('sale_details as sd')
+            ->join('sales as s', 's.id', 'sd.sale_id')
+            ->join('products as p', 'p.id', 'sd.product_id')
+            ->whereBetween('s.date_issue', [$since, $until])
+            ->where('p.is_invoiceable', true)
+            ->orderBy('date_issue', 'asc')
+            ->get([
+                's.date_issue',
 
-        foreach ($sales as $sale) {
+                'sd.*'
+            ]);
+
+        $days = $details->groupBy('date_issue');
+
+
+        foreach ($days as $day => $saleDetails) {
+            
+            $ventas = collect([]);
 
             $total = 0;
-            $subtotal = 0;
-            $total_igv = 0;
-            $details = collect([]);
-            foreach ($sale->saleDetails as $detail) {
-                if ($detail->product->is_invoiceable) {
-                    $total += $detail->total;
-                    $subtotal += $detail->total / (1.18);
-                    $total_igv += $detail->total - ($detail->total / (1.18));
-                    $details->push($detail);
+            $items = collect([]);
+
+            foreach ($saleDetails as $saleDetail) {
+
+                $total += $saleDetail->total;
+                $items->push($saleDetail);
+
+                if ($total > 100) {
+
+                    // REALIZAR LA VENTA CON TODO LOS DETALLES
+                    $this->insertInvoice($day, $total, $items);
+
+                    $total = 0;
+                    $subtotal = 0;
+                    $total_igv = 0;
+                    $items = collect([]);
+
                 }
-            }
-
-            if ($details->count() > 0) {
-
-                $serie = Serie::find($serie_id);
-                $serie->current_number = $serie->current_number + 1;
-                $serie->save();
-
-                $invoice = Sale::create([
-                    'document_number' => $serie->current_number,
-                    'date_issue' => $sale->date_issue,
-                    'date_due' => $sale->date_due,
-        
-                    'global_discount' => 0,
-                    'item_discount' => 0,
-                    'total_discount' => 0,
-        
-                    'subtotal' => $subtotal,
-                    'total_igv' => $total_igv,
-                    'total_exonerated' => 0,
-                    'total_unaffected' => 0,
-                    'total_free' => 0,
-                    'total_taxed' => $total_igv,
-                    'total' => $total,
-        
-                    // 'received_money',
-                    // 'change',
-        
-                    'type_of_payment_id' => $sale->type_of_payment_id,
-                    'serie_id' => $serie_id,
-                    'customer_id' => $sale->customer_id,
-                    'user_id' => $user_id
-                ]);
-
-                SaleDetail::insert($details->map(function ($detail) use ($invoice) {
-                    return [
-                        'discount' => 0,
-                        'price' => $detail->price,
-                        'unit_value' => $detail->unit_value,
-                        'quantity' => $detail->quantity,
-        
-                        'purchase_price' => $detail->purchase_price,
-        
-                        'total_igv' => $detail->total_igv,
-                        'subtotal' => $detail->subtotal,
-                        'total' => $detail->total,
-        
-                        'sale_id' => $invoice->id,
-                        'product_id' => $detail->product_id,
-                    ];
-                })->toArray());
-
-                Sale::where('id', $sale->id)->update([
-                    'invoice_id' => $invoice->id
-                ]);
 
             }
+
+            if ($total > 0) {
+
+                // REALIZAR LA VENTA CON TODO LOS DETALLES
+                $this->insertInvoice($day, $total, $items);
+
+                $total = 0;
+                $subtotal = 0;
+                $total_igv = 0;
+                $items = collect([]);
+
+            }
+
 
         }
 
 
+        return 'terminado';
+
+        
+
+        // $sales = Sale::with('saleDetails.product')
+        //     ->where('serie_id', 1)
+        //     ->whereNull('invoice_id')
+        //     ->whereBetween('date_issue', [$since, $until])
+        //     ->orderBy('id', 'asc')
+        //     ->get();
+
+        // foreach ($sales as $sale) {
+
+        //     $total = 0;
+        //     $subtotal = 0;
+        //     $total_igv = 0;
+        //     $details = collect([]);
+        //     foreach ($sale->saleDetails as $detail) {
+        //         if ($detail->product->is_invoiceable) {
+        //             $total += $detail->total;
+        //             $subtotal += $detail->total / (1.18);
+        //             $total_igv += $detail->total - ($detail->total / (1.18));
+        //             $details->push($detail);
+        //         }
+        //     }
+
+        //     if ($details->count() > 0) {
+
+        //         $serie = Serie::find($serie_id);
+        //         $serie->current_number = $serie->current_number + 1;
+        //         $serie->save();
+
+        //         $invoice = Sale::create([
+        //             'document_number' => $serie->current_number,
+        //             'date_issue' => $sale->date_issue,
+        //             'date_due' => $sale->date_due,
+        
+        //             'global_discount' => 0,
+        //             'item_discount' => 0,
+        //             'total_discount' => 0,
+        
+        //             'subtotal' => $subtotal,
+        //             'total_igv' => $total_igv,
+        //             'total_exonerated' => 0,
+        //             'total_unaffected' => 0,
+        //             'total_free' => 0,
+        //             'total_taxed' => $subtotal,
+        //             'total' => $total,
+        
+        //             // 'received_money',
+        //             // 'change',
+        
+        //             'type_of_payment_id' => $sale->type_of_payment_id,
+        //             'serie_id' => $serie_id,
+        //             'customer_id' => $sale->customer_id,
+        //             'user_id' => $user_id
+        //         ]);
+
+        //         SaleDetail::insert($details->map(function ($detail) use ($invoice) {
+        //             return [
+        //                 'discount' => 0,
+        //                 'price' => $detail->price,
+        //                 'unit_value' => $detail->unit_value,
+        //                 'quantity' => $detail->quantity,
+        
+        //                 'purchase_price' => $detail->purchase_price,
+        
+        //                 'total_igv' => $detail->total_igv,
+        //                 'subtotal' => $detail->subtotal,
+        //                 'total' => $detail->total,
+        
+        //                 'sale_id' => $invoice->id,
+        //                 'product_id' => $detail->product_id,
+        //             ];
+        //         })->toArray());
+
+        //         Sale::where('id', $sale->id)->update([
+        //             'invoice_id' => $invoice->id
+        //         ]);
+
+        //     }
+
+        // }
+
+
         return "terminado";
+    }
+
+
+    public function insertInvoice($day, $total, $details)
+    {
+        $serie_id = 2;
+
+        $serie = Serie::find($serie_id);
+        $serie->current_number = $serie->current_number + 1;
+        $serie->save();
+
+        $invoice = Sale::create([
+            'document_number' => $serie->current_number,
+            'date_issue' => $day,
+            'date_due' => $day,
+
+            'global_discount' => 0,
+            'item_discount' => 0,
+            'total_discount' => 0,
+
+            'subtotal' => round($total / (1.18), 2),
+            'total_igv' => round($total - ($total / (1.18)), 2),
+            'total_exonerated' => 0,
+            'total_unaffected' => 0,
+            'total_free' => 0,
+            'total_taxed' => round($total / (1.18), 2),
+            'total' => $total,
+
+            'type_of_payment_id' => 1,
+            'serie_id' => $serie_id,
+            'customer_id' => 1,
+            'user_id' => 1
+        ]);
+
+        SaleDetail::insert($details->map(function ($detail) use ($invoice) {
+            return [
+                'discount' => 0,
+                'price' => $detail->price,
+                'unit_value' => $detail->unit_value,
+                'quantity' => $detail->quantity,
+
+                'purchase_price' => $detail->purchase_price,
+
+                'total_igv' => $detail->total_igv,
+                'subtotal' => $detail->subtotal,
+                'total' => $detail->total,
+
+                'sale_id' => $invoice->id,
+                'product_id' => $detail->product_id,
+            ];
+        })->toArray());
     }
 }

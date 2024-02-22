@@ -25,16 +25,23 @@ class DashboardController extends Controller
                 DB::raw('sum(total) as sales_sum')
             ]);
         
+        $todayCount = $general->where('date_issue', $now)->sum('sales_count');
+        $todaySum = $general->where('date_issue', $now)->sum('sales_sum');
+
+        $yesterdayCount = $general->where('date_issue', $yesterday)->sum('sales_count');
+        $yesterdaySum = $general->where('date_issue', $yesterday)->sum('sales_sum');
+
+        
         $general = [
             'sales_count' => [
-                'today' => $general[1]->sales_count,
-                'yesterday' => $general[0]->sales_count,
-                'difference' => $general[1]->sales_count - $general[0]->sales_count
+                'today' => $todayCount,
+                'yesterday' => $yesterdayCount,
+                'difference' => $todayCount - $yesterdayCount
             ],
             'sales_total' => [
-                'today' => $general[1]->sales_sum,
-                'yesterday' => $general[0]->sales_sum,
-                'difference' => round($general[1]->sales_sum - $general[0]->sales_sum, 2)
+                'today' => $todaySum,
+                'yesterday' => $yesterdaySum,
+                'difference' => round($todaySum - $yesterdaySum, 2)
             ], 
         ];
         

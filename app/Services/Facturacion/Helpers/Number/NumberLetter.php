@@ -117,11 +117,11 @@ class NumberLetter
                 $valor_convertido = number_format($number, 2, ',', '.') . ' (' . ucfirst($converted) . $decNumberStr . '/100 '.$currency.')';
             }
         }else{
-//            if(empty($decimales)){
-//                $valor_convertido = ucfirst($converted) . $currency;
-//            } else {
-//                $valor_convertido = ucfirst($converted) . $currency. ' con ' . $decimales . $decimals;
-//            }
+        //    if(empty($decimales)){
+        //        $valor_convertido = ucfirst($converted) . $currency;
+        //    } else {
+        //        $valor_convertido = ucfirst($converted) . $currency. ' con ' . $decimales . $decimals;
+        //    }
             if(empty($decimales)){
                 $valor_convertido = ucfirst($converted) . 'con ' . '00/100 ' . $currency;
             } else {

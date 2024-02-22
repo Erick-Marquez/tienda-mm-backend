@@ -4,6 +4,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Sunat\SummaryController;
+use App\Http\Controllers\Sunat\PdfController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +44,11 @@ Route::prefix('sunat')->group(function () {
         Route::post('get-documents', [SummaryController::class, 'getDocuments'])->name('api.sunat.summary.get-documents');
         Route::post('send', [SummaryController::class, 'send'])->name('api.sunat.summary.send');
         Route::post('ticket', [SummaryController::class, 'ticket'])->name('api.sunat.summary.ticket');
+    });
+
+    Route::prefix('pdf')->group(function () {
+        Route::get('single', [PdfController::class, 'single'])->name('api.sunat.pdf.single');
+        Route::post('batch', [PdfController::class, 'batch'])->name('api.sunat.pdf.batch');
     });
 
 });

@@ -28,10 +28,10 @@
                     {{-- <img src="img/phone-call.svg" alt="telefono"> --}}
                     <p class="telefono__numero"> Tel: 906 443 937</p>
                 </div>
-                <a href="#" class="correo titular__elemento">
-                    {{-- <img src="img/email.svg" alt="correo"> --}}
-                    <p class="correo__dir"></p>
-                </a>
+                <!-- <a href="#" class="correo titular__elemento"> -->
+                    <!-- <img src="img/email.svg" alt="correo"> -->
+                    <!-- <p class="correo__dir"></p> -->
+                <!-- </a> -->
             </div>
             <div class="ruc">
                 <p class="ruc__primero">R.U.C. 10157516286</p>
@@ -40,53 +40,50 @@
             </div>
         </header>
         <main>
-            <div class="cliente">
-                <p>Cliente<span class="cliente__puntos">:</span>{{ $sale->customer->name }}</p>
-                <p>Num. Doc.<span class="cliente__puntos">:</span>{{ $sale->customer->document }}</p>
-                {{--<p>Direccion<span class="cliente__puntos">:</span>{{ $sale->customer->address }}</p>--}}
-            </div>
-            <table class="descripcion">
-                <thead>
-                    <tr>
-                        <td>FECHA DE EMISIÓN</td>
-                        <td>CONDICIÓN DE PAGO</td>
-                        <td>TIPO DE MONEDA</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ $sale->created_at->toDateString() }}</td>
-                        <td>EFECTIVO</td>
-                        <td>Soles</td>
-                    </tr>
-                </tbody>
+            <table class="descripcion" style="width: 100%;">
+                <tr>
+                    <td class="cliente"><p>Cliente<span class="cliente__puntos">:</span></p></td>
+                    <td class="derecha-cabecera">{{ $sale->customer->name }}</td>
+                    <td class="emision"><p>Fch. Emisión<span class="cliente__puntos">:</span></p></td>
+                    <td class="derecha-cabecera">{{ $sale->date_issue }}</td>
+                </tr>
+                <tr>
+                    <td class="documento"><p>Num. Doc.<span class="cliente__puntos">:</span></p></td>
+                    <td class="derecha-cabecera">{{ $sale->customer->document }}</td>
+                    <td class="pago"><p>Tipo de pago<span class="cliente__puntos">:</span></p></td>
+                    <td class="derecha-cabecera">EFECTIVO</td>
+                </tr>
             </table>
             <table class="pagar" >
                 <thead>
                     <tr>
-                        <td style="width: 35px">CANT.</td>
+                        <td style="width: 30px">CANT.</td>
                         <td >DESCRIPCIÓN</td>
-                        <td style="width: 90px">AFECT.IGV</td>
-                        <td style="width: 90px">PRECIO</td>
-                        <td style="width: 90px">IMPORTE</td>
+                        <td style="width: 60px">AFECT.IGV</td>
+                        <td style="width: 70px">PRECIO</td>
+                        <td style="width: 70px">IMPORTE</td>
                     </tr>
                 </thead>
-                <tbody class="detalle"> 
-                    @foreach ($sale->saleDetails as $detail)
+                <tbody class="detalle">
+                    @php
+                        $saleDetails = $sale->saleDetails->groupBy('product_id')
+                    @endphp
+                    @foreach ($saleDetails as $detail)                
                         <tr>
-                            <td>{{ $detail->quantity }}</td>
-                            <td>{{ $detail->product->name  }}</td>
+                            <td>{{ $detail->sum('quantity') }}</td>
+                            <td>{{ $detail->first()->product->name  }}</td>
                             <td>Gravado</td>
-                            <td>S/. {{ number_format(round($detail->price, 2), 2, '.', '') }}</td>
-                            <td>S/. {{ number_format(round($detail->total, 2), 2, '.', '') }}</td>
+                            <td>S/. {{ number_format(round($detail->sum('price'), 2), 2, '.', '') }}</td>
+                            <td>S/. {{ number_format(round($detail->sum('total'), 2), 2, '.', '') }}</td>
                         </tr>
                     @endforeach
                     <tr class="tfood">
-                        <td colspan="5">SON {{ \App\Services\Facturacion\Helpers\Number\NumberLetter::convertToLetter(round($sale->total, 2), 'SOLES') }}</td>
+                        <td colspan="4">SON {{ \App\Services\Facturacion\Helpers\Number\NumberLetter::convertToLetter(round($sale->total, 2), 'SOLES') }}</td>
+                        <td>S/ {{ number_format(round($sale->total, 2), 2, '.', '') }}</td>
                     </tr>
                 </tbody>
             </table>
-            <table class="transaccion">
+            <!-- <table class="transaccion">
                 <tr>
                     <td>
                         <div class="escaner">
@@ -161,7 +158,7 @@
                         </td>
                     </tr>
                 @endif
-            </table>
+            </table> -->
         </main>
 
         @if ($loop->last) @else

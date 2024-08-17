@@ -24,12 +24,26 @@ class DashboardController extends Controller
                 DB::raw('count(total) as sales_count'),
                 DB::raw('sum(total) as sales_sum')
             ]);
+
+        $products = DB::table('sale_details')
+            ->leftJoin('sales', 'sales.id', 'sale_details.sale_id')
+            ->leftJoin('products', 'products.id', 'sale_details.product_id')
+            ->where('products.is_weighable', true)
+            ->whereIn('sales.date_issue', [$now, $yesterday])
+            ->groupBy('sales.date_issue')
+            ->orderBy('sales.date_issue')
+            ->get([
+                'sales.date_issue',
+                DB::raw('sum(sale_details.quantity) as product_count')
+            ]);
         
         $todayCount = $general->where('date_issue', $now)->sum('sales_count');
         $todaySum = $general->where('date_issue', $now)->sum('sales_sum');
+        $todayProductCount = $products->where('date_issue', $now)->sum('product_count');
 
         $yesterdayCount = $general->where('date_issue', $yesterday)->sum('sales_count');
         $yesterdaySum = $general->where('date_issue', $yesterday)->sum('sales_sum');
+        $yesterdayProductCount = $products->where('date_issue', $yesterday)->sum('product_count');
 
         
         $general = [
@@ -43,6 +57,11 @@ class DashboardController extends Controller
                 'yesterday' => $yesterdaySum,
                 'difference' => round($todaySum - $yesterdaySum, 2)
             ], 
+            'products_count' => [
+                'today' => $todayProductCount,
+                'yesterday' => $yesterdayProductCount,
+                'difference' => round($todayProductCount - $yesterdayProductCount, 2)
+            ]
         ];
         
         

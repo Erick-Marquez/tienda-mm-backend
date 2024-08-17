@@ -129,9 +129,12 @@ class SaleController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Sale $sale)
+    public function show(int $id)
     {
-        //
+        $sale = Sale::with('saleDetails.product', 'customer', 'serie.voucherType')
+            ->find($id);
+        
+        return response()->json($sale, 200);
     }
 
     /**
@@ -167,6 +170,7 @@ class SaleController extends Controller
             ->join('products as p', 'p.id', 'sd.product_id')
             ->whereBetween('s.date_issue', [$since, $until])
             ->where('p.is_invoiceable', true)
+            ->where('s.serie_id', 1)
             ->orderBy('date_issue', 'asc')
             ->get([
                 's.date_issue',
